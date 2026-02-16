@@ -1,0 +1,152 @@
+[
+  {
+    "text": "Attack Name: Yahoo Data Breach\nAlso Known As: The 3 Billion Breach\n\nAttack Type: Data Breach, Credential Theft\nAttack Vector: Spear phishing leading to credential compromise\n\nTechnical Overview:\nThreat actors widely attributed to state-sponsored groups gained access to Yahoo's internal network via spear phishing. They exfiltrated the user database and generated forged session cookies to access accounts without passwords.\n\nThreat Actor: State-sponsored\nAttack Scale: Global mass compromise\n\nTags:\ncredential theft, session hijacking, state-sponsored attack, account takeover",
+    "metadata": {
+      "attack_id": "ATTACK-001",
+      "attack_name": "Yahoo Data Breach",
+      "chunk_type": "overview",
+      "attack_type": ["Data Breach", "Credential Theft"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "Attack Execution Flow for Yahoo Data Breach\n\nVulnerabilities Exploited:\n- Credential compromise via spear phishing\n- Abuse of proprietary session cookie forging capability\n\nAttack Steps:\n- Initial access via spear phishing of Yahoo employee\n- Privilege escalation and lateral movement to user database\n- Exfiltration of user records\n- Forged session cookies used to bypass authentication\n\nTimeline:\n- Year: 2013\n- Disclosure Year: 2016",
+    "metadata": {
+      "attack_id": "ATTACK-001",
+      "attack_name": "Yahoo Data Breach",
+      "chunk_type": "attack_flow",
+      "attack_type": ["Data Breach", "Credential Theft"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "Prevention Strategies for Yahoo Data Breach\n\nRecommended Security Measures:\n- Multi-factor authentication\n- Hardware security keys\n- Privileged access monitoring\n- Session token integrity validation\n- Encryption of sensitive database fields\n\nKey Lessons Learned:\n- Delayed breach disclosure increases user and corporate risk\n- Credential monitoring is critical for insider and phishing threats\n- Session authentication mechanisms require continuous auditing",
+    "metadata": {
+      "attack_id": "ATTACK-001",
+      "attack_name": "Yahoo Data Breach",
+      "chunk_type": "prevention",
+      "attack_type": ["Data Breach", "Credential Theft"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "Impact Analysis of Yahoo Data Breach\n\nAffected Sectors:\nTechnology, Consumer Services\n\nTargeted Organizations:\nYahoo! Inc.\n\nAttack Impact:\nFinancial Loss: $350 million acquisition price reduction and $117.5 million legal settlement\nData Compromised: Names, email addresses, DOB, hashed passwords, security questions and answers\nSystems Affected: Yahoo user database and authentication infrastructure\nGeographical Spread: Global\n\nDetection Techniques:\n- Investigation of suspicious account activity using forged cookies\n- Security audit during Verizon acquisition",
+    "metadata": {
+      "attack_id": "ATTACK-001",
+      "attack_name": "Yahoo Data Breach",
+      "chunk_type": "impact_detection",
+      "attack_type": ["Data Breach", "Credential Theft"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "User Safety Guidance Based on Yahoo Data Breach\n\nRecommended Personal Safety Actions:\n- Use unique passwords for each service\n- Enable multi-factor authentication\n- Avoid using easily guessable security questions\n- Monitor accounts for suspicious login alerts",
+    "metadata": {
+      "attack_id": "ATTACK-001",
+      "attack_name": "Yahoo Data Breach",
+      "chunk_type": "user_guidance",
+      "attack_type": ["Data Breach", "Credential Theft"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "Attack Name: WannaCry Ransomware Attack\nAlso Known As: WannaCrypt, WanaCrypt0r 2.0, WCRY\n\nAttack Type: Ransomware, Worm\nAttack Vector: SMBv1 remote code execution vulnerability exploitation\n\nTechnical Overview:\nWannaCry is a ransomware worm that leveraged the leaked EternalBlue exploit to target SMBv1 protocol vulnerabilities. It automatically spread across vulnerable Windows systems, installed a backdoor, and encrypted numerous file types using hybrid AES and RSA encryption.\n\nThreat Actor: Nation-state linked cybercrime group\nAttack Scale: Global automated worm outbreak\n\nTags:\nworm propagation, ransomware outbreak, SMB exploitation, nation-state linked tools",
+    "metadata": {
+      "attack_id": "ATTACK-002",
+      "attack_name": "WannaCry Ransomware Attack",
+      "chunk_type": "overview",
+      "attack_type": ["Ransomware", "Worm"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "Attack Execution Flow for WannaCry Ransomware Attack\n\nVulnerabilities Exploited:\n- CVE-2017-0144 (MS17-010)\n- EternalBlue exploit\n- DoublePulsar backdoor\n\nAttack Steps:\n- Scan for vulnerable devices on TCP port 445\n- Exploit SMBv1 vulnerability using EternalBlue\n- Deploy DoublePulsar backdoor to load malware payload\n- Self-replicate across local and network systems\n- Encrypt files and display ransom demand\n\nTimeline:\n- Year: 2017\n- Patch Release Date: March 2017\n- Attack Launch Period: May 2017",
+    "metadata": {
+      "attack_id": "ATTACK-002",
+      "attack_name": "WannaCry Ransomware Attack",
+      "chunk_type": "attack_flow",
+      "attack_type": ["Ransomware", "Worm"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "Prevention Strategies for WannaCry Ransomware Attack\n\nRecommended Security Measures:\n- Install MS17-010 security patches\n- Disable SMBv1 protocol\n- Block SMB traffic at network perimeter\n- Maintain offline or immutable backups\n\nKey Lessons Learned:\n- Importance of timely patch management\n- Risks of leaked government cyber weapons\n- Network segmentation reduces worm propagation impact",
+    "metadata": {
+      "attack_id": "ATTACK-002",
+      "attack_name": "WannaCry Ransomware Attack",
+      "chunk_type": "prevention",
+      "attack_type": ["Ransomware", "Worm"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "Impact Analysis of WannaCry Ransomware Attack\n\nAffected Sectors:\nHealthcare, Telecommunications, Manufacturing, Government\n\nTargeted Organizations:\nNHS (UK), Telefónica, FedEx, Renault-Nissan, Deutsche Bahn\n\nAttack Impact:\nFinancial Loss: Estimated $4 billion globally\nData Compromised: Operational data rendered inaccessible due to encryption\nSystems Affected: 230,000+ computers infected\nGeographical Spread: 150+ countries\n\nDetection Techniques:\n- Monitoring DNS queries to kill switch domain\n- Traffic spikes on TCP port 445\n- Endpoint behavioral detection of mass file encryption\n- Global ransomware outbreak monitoring",
+    "metadata": {
+      "attack_id": "ATTACK-002",
+      "attack_name": "WannaCry Ransomware Attack",
+      "chunk_type": "impact_detection",
+      "attack_type": ["Ransomware", "Worm"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "User Safety Guidance Based on WannaCry Ransomware Attack\n\nRecommended Personal Safety Actions:\n- Enable automatic operating system updates\n- Maintain offline backups of important data\n- Avoid opening suspicious email attachments\n- Report ransomware warnings immediately",
+    "metadata": {
+      "attack_id": "ATTACK-002",
+      "attack_name": "WannaCry Ransomware Attack",
+      "chunk_type": "user_guidance",
+      "attack_type": ["Ransomware", "Worm"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "Attack Name: SolarWinds Orion Supply Chain Attack\nAlso Known As: SUNBURST, Solorigate, StellarParticle, UNC2452\n\nAttack Type: Supply Chain Attack, Cyber Espionage\nAttack Vector: Trojanized software update distribution\n\nTechnical Overview:\nThreat actors widely attributed to Russian state-linked group APT29 compromised SolarWinds' build environment and inserted a SUNBURST backdoor into legitimate Orion software updates. The update was digitally signed and distributed to thousands of organizations, enabling covert long-term espionage.\n\nThreat Actor: Nation-state espionage group\nAttack Scale: Stealthy global supply chain infiltration\n\nTags:\nsoftware supply chain compromise, digitally signed malware, nation-state espionage, trusted update abuse",
+    "metadata": {
+      "attack_id": "ATTACK-003",
+      "attack_name": "SolarWinds Orion Supply Chain Attack",
+      "chunk_type": "overview",
+      "attack_type": ["Supply Chain Attack", "Cyber Espionage"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "Attack Execution Flow for SolarWinds Orion Supply Chain Attack\n\nVulnerabilities Exploited:\n- Compromised SolarWinds software build pipeline\n- Malicious code injection into Orion update mechanism\n\nAttack Steps:\n- Initial compromise of SolarWinds development environment\n- Insertion of test malicious code into Orion software\n- Deployment of SUNBURST backdoor into production build pipeline\n- Distribution of trojanized Orion updates to customers\n- Selective exploitation of high-value targets\n- Discovery during FireEye security investigation\n\nTimeline:\n- Year: 2020\n- Initial Compromise Period: September 2019\n- Malicious Update Distribution: March–June 2020\n- Disclosure Date: December 2020",
+    "metadata": {
+      "attack_id": "ATTACK-003",
+      "attack_name": "SolarWinds Orion Supply Chain Attack",
+      "chunk_type": "attack_flow",
+      "attack_type": ["Supply Chain Attack", "Cyber Espionage"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "Prevention Strategies for SolarWinds Orion Supply Chain Attack\n\nRecommended Security Measures:\n- Secure software build pipeline integrity controls\n- Adopt Zero Trust Architecture\n- Implement network segmentation for management platforms\n- Maintain Software Bill of Materials (SBOM) for third-party software\n\nKey Lessons Learned:\n- Digitally signed updates can still be compromised\n- Supply chain security is critical for national and enterprise defense\n- Advanced attackers often maintain dormant persistence to evade detection",
+    "metadata": {
+      "attack_id": "ATTACK-003",
+      "attack_name": "SolarWinds Orion Supply Chain Attack",
+      "chunk_type": "prevention",
+      "attack_type": ["Supply Chain Attack", "Cyber Espionage"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "Impact Analysis of SolarWinds Orion Supply Chain Attack\n\nAffected Sectors:\nGovernment, Technology, Defense, Consulting\n\nTargeted Organizations:\nU.S. Department of Treasury, Department of Homeland Security, Microsoft, FireEye, Intel\n\nAttack Impact:\nFinancial Loss: $40M+ remediation cost for SolarWinds and extensive investigative costs for affected organizations\nData Compromised: Sensitive government communications, corporate intellectual property, and security infrastructure data\nSystems Affected: 18,000 organizations received compromised update; approximately 100 experienced targeted exploitation\nGeographical Spread: Global\n\nDetection Techniques:\n- FireEye detection of unauthorized MFA device registration\n- Analysis of suspicious DNS traffic mimicking Orion telemetry\n- Identification of malicious digitally signed DLL components",
+    "metadata": {
+      "attack_id": "ATTACK-003",
+      "attack_name": "SolarWinds Orion Supply Chain Attack",
+      "chunk_type": "impact_detection",
+      "attack_type": ["Supply Chain Attack", "Cyber Espionage"],
+      "severity_level": "Critical"
+    }
+  },
+  {
+    "text": "User Safety Guidance Based on SolarWinds Orion Supply Chain Attack\n\nRecommended Personal Safety Actions:\n- Apply software updates only from verified vendors\n- Monitor unusual behavior in trusted management software\n- Enable multi-factor authentication for administrative accounts",
+    "metadata": {
+      "attack_id": "ATTACK-003",
+      "attack_name": "SolarWinds Orion Supply Chain Attack",
+      "chunk_type": "user_guidance",
+      "attack_type": ["Supply Chain Attack", "Cyber Espionage"],
+      "severity_level": "Critical"
+    }
+  }
+]

@@ -1,0 +1,204 @@
+[
+  {
+    "attack_id": "ATTACK-001",
+    "attack_name": "Yahoo Data Breach",
+    "aliases": ["The 3 Billion Breach"],
+    "year": 2013,
+    "disclosure_year": 2016,
+    "attack_type": ["Data Breach", "Credential Theft"],
+    "attack_tags": [
+      "credential theft",
+      "session hijacking",
+      "state-sponsored attack",
+      "account takeover"
+    ],
+    "threat_actor_type": "State-sponsored",
+    "attack_scale": "Global mass compromise",
+    "target_sector": ["Technology", "Consumer Services"],
+    "target_organizations": ["Yahoo! Inc."],
+    "attack_vector": "Spear phishing leading to credential compromise",
+    "vulnerabilities_exploited": [
+      "Credential compromise via spear phishing",
+      "Abuse of proprietary session cookie forging capability"
+    ],
+    "technical_summary": "Threat actors widely attributed to state-sponsored groups gained access to Yahoo's internal network via spear phishing. They exfiltrated the user database and generated forged session cookies to access accounts without passwords.",
+    "attack_flow": [
+      "Initial access via spear phishing of Yahoo employee",
+      "Privilege escalation and lateral movement to user database",
+      "Exfiltration of user records",
+      "Forged session cookies used to bypass authentication"
+    ],
+    "impact": {
+      "financial_loss": "$350 million acquisition price reduction and $117.5 million legal settlement",
+      "data_compromised": "Names, email addresses, DOB, hashed passwords, security questions and answers",
+      "systems_affected": "Yahoo user database and authentication infrastructure",
+      "geographical_spread": "Global"
+    },
+    "detection_method": [
+      "Investigation of suspicious account activity using forged cookies",
+      "Security audit during Verizon acquisition"
+    ],
+    "prevention_measures": [
+      "Multi-factor authentication",
+      "Hardware security keys",
+      "Privileged access monitoring",
+      "Session token integrity validation",
+      "Encryption of sensitive database fields"
+    ],
+    "lessons_learned": [
+      "Delayed breach disclosure increases user and corporate risk",
+      "Credential monitoring is critical for insider and phishing threats",
+      "Session authentication mechanisms require continuous auditing"
+    ],
+    "user_safety_tips": [
+      "Use unique passwords for each service",
+      "Enable multi-factor authentication",
+      "Avoid using easily guessable security questions",
+      "Monitor accounts for suspicious login alerts"
+    ],
+    "severity_level": "Critical",
+    "references": [
+      "https://www.justice.gov",
+      "https://www.sec.gov"
+    ]
+  },
+  {
+    "attack_id": "ATTACK-002",
+    "attack_name": "WannaCry Ransomware Attack",
+    "aliases": ["WannaCrypt", "WanaCrypt0r 2.0", "WCRY"],
+    "year": 2017,
+    "patch_release_date": "March 2017",
+    "attack_launch_period": "May 2017",
+    "attack_type": ["Ransomware", "Worm"],
+    "attack_tags": [
+      "worm propagation",
+      "ransomware outbreak",
+      "SMB exploitation",
+      "nation-state linked tools"
+    ],
+    "threat_actor_type": "Nation-state linked cybercrime group",
+    "attack_scale": "Global automated worm outbreak",
+    "target_sector": ["Healthcare", "Telecommunications", "Manufacturing", "Government"],
+    "target_organizations": ["NHS (UK)", "Telefónica", "FedEx", "Renault-Nissan", "Deutsche Bahn"],
+    "attack_vector": "SMBv1 remote code execution vulnerability exploitation",
+    "vulnerabilities_exploited": [
+      "CVE-2017-0144 (MS17-010)",
+      "EternalBlue exploit",
+      "DoublePulsar backdoor"
+    ],
+    "technical_summary": "WannaCry is a ransomware worm that leveraged the leaked EternalBlue exploit to target SMBv1 protocol vulnerabilities. It automatically spread across vulnerable Windows systems, installed a backdoor, and encrypted numerous file types using hybrid AES and RSA encryption.",
+    "attack_flow": [
+      "Scan for vulnerable devices on TCP port 445",
+      "Exploit SMBv1 vulnerability using EternalBlue",
+      "Deploy DoublePulsar backdoor to load malware payload",
+      "Self-replicate across local and network systems",
+      "Encrypt files and display ransom demand"
+    ],
+    "impact": {
+      "financial_loss": "Estimated $4 billion globally",
+      "data_compromised": "Operational data rendered inaccessible due to encryption",
+      "systems_affected": "230,000+ computers infected",
+      "geographical_spread": "150+ countries"
+    },
+    "detection_method": [
+      "Monitoring DNS queries to kill switch domain",
+      "Traffic spikes on TCP port 445",
+      "Endpoint behavioral detection of mass file encryption",
+      "Global ransomware outbreak monitoring"
+    ],
+    "prevention_measures": [
+      "Install MS17-010 security patches",
+      "Disable SMBv1 protocol",
+      "Block SMB traffic at network perimeter",
+      "Maintain offline or immutable backups"
+    ],
+    "lessons_learned": [
+      "Importance of timely patch management",
+      "Risks of leaked government cyber weapons",
+      "Network segmentation reduces worm propagation impact"
+    ],
+    "user_safety_tips": [
+      "Enable automatic operating system updates",
+      "Maintain offline backups of important data",
+      "Avoid opening suspicious email attachments",
+      "Report ransomware warnings immediately"
+    ],
+    "severity_level": "Critical",
+    "references": [
+      "https://www.cisa.gov",
+      "https://www.ncsc.gov.uk"
+    ]
+  },
+  {
+    "attack_id": "ATTACK-003",
+    "attack_name": "SolarWinds Orion Supply Chain Attack",
+    "aliases": ["SUNBURST", "Solorigate", "StellarParticle", "UNC2452"],
+    "year": 2020,
+    "initial_compromise_period": "September 2019",
+    "malicious_update_distribution": "March–June 2020",
+    "disclosure_date": "December 2020",
+    "attack_type": ["Supply Chain Attack", "Cyber Espionage"],
+    "attack_tags": [
+      "software supply chain compromise",
+      "digitally signed malware",
+      "nation-state espionage",
+      "trusted update abuse"
+    ],
+    "threat_actor_type": "Nation-state espionage group",
+    "attack_scale": "Stealthy global supply chain infiltration",
+    "target_sector": ["Government", "Technology", "Defense", "Consulting"],
+    "target_organizations": [
+      "U.S. Department of Treasury",
+      "Department of Homeland Security",
+      "Microsoft",
+      "FireEye",
+      "Intel"
+    ],
+    "attack_vector": "Trojanized software update distribution",
+    "vulnerabilities_exploited": [
+      "Compromised SolarWinds software build pipeline",
+      "Malicious code injection into Orion update mechanism"
+    ],
+    "technical_summary": "Threat actors widely attributed to Russian state-linked group APT29 compromised SolarWinds' build environment and inserted a SUNBURST backdoor into legitimate Orion software updates. The update was digitally signed and distributed to thousands of organizations, enabling covert long-term espionage.",
+    "attack_flow": [
+      "Initial compromise of SolarWinds development environment",
+      "Insertion of test malicious code into Orion software",
+      "Deployment of SUNBURST backdoor into production build pipeline",
+      "Distribution of trojanized Orion updates to customers",
+      "Selective exploitation of high-value targets",
+      "Discovery during FireEye security investigation"
+    ],
+    "impact": {
+      "financial_loss": "$40M+ remediation cost for SolarWinds and extensive investigative costs for affected organizations",
+      "data_compromised": "Sensitive government communications, corporate intellectual property, and security infrastructure data",
+      "systems_affected": "18,000 organizations received compromised update; approximately 100 experienced targeted exploitation",
+      "geographical_spread": "Global"
+    },
+    "detection_method": [
+      "FireEye detection of unauthorized MFA device registration",
+      "Analysis of suspicious DNS traffic mimicking Orion telemetry",
+      "Identification of malicious digitally signed DLL components"
+    ],
+    "prevention_measures": [
+      "Secure software build pipeline integrity controls",
+      "Adopt Zero Trust Architecture",
+      "Implement network segmentation for management platforms",
+      "Maintain Software Bill of Materials (SBOM) for third-party software"
+    ],
+    "lessons_learned": [
+      "Digitally signed updates can still be compromised",
+      "Supply chain security is critical for national and enterprise defense",
+      "Advanced attackers often maintain dormant persistence to evade detection"
+    ],
+    "user_safety_tips": [
+      "Apply software updates only from verified vendors",
+      "Monitor unusual behavior in trusted management software",
+      "Enable multi-factor authentication for administrative accounts"
+    ],
+    "severity_level": "Critical",
+    "references": [
+      "https://www.cisa.gov",
+      "https://attack.mitre.org/campaigns/C0024/"
+    ]
+  }
+]
