@@ -1,13 +1,13 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException # type: ignore
 from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware # type: ignore
 
 import json
 import os
 
-import chromadb
-from sentence_transformers import SentenceTransformer
-from ollama import chat
+import chromadb # type: ignore
+from sentence_transformers import SentenceTransformer # type: ignore
+from ollama import chat # type: ignore
 
 from src.core.attack_classifier import classify_attack
 from src.rag.retriever import retrieve_chunks
