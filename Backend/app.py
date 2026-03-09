@@ -24,7 +24,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # restrict later
+    allow_origins=["*"],  # restrict later for production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -103,7 +103,10 @@ def chat_endpoint(payload: QueryRequest):
     if is_malicious_query(query):
         error_response("MALICIOUS_QUERY", "Query contains unsafe instructions.")
 
+    # ==============================
     # Step 1 — Attack classification
+    # ==============================
+
     attack = classify_attack(query)
 
     if not attack:
@@ -112,18 +115,24 @@ def chat_endpoint(payload: QueryRequest):
             "Unable to classify attack. Please be more specific."
         )
 
-    # Step 2 — Query embedding
+    # ==============================
+    # Step 2 — Generate embedding
+    # ==============================
+
     query_embedding = model.encode([query]).tolist()
 
+    # ==============================
     # Step 3 — Retrieve chunks
+    # ==============================
+
     try:
         chunks, distances = retrieve_chunks(
             collection=collection,
             query_embedding=query_embedding,
             attack_id=attack["attack_id"]
         )
+
     except Exception:
-        # fallback in case retriever returns only chunks
         chunks = retrieve_chunks(
             collection=collection,
             query_embedding=query_embedding,
@@ -137,10 +146,25 @@ def chat_endpoint(payload: QueryRequest):
             "No relevant knowledge found."
         )
 
-    # Step 4 — Context creation
-    context = "\n\n".join(chunks[:3])
+    # ==============================
+    # Step 4 — Smart chunk ranking
+    # ==============================
 
+    # Sort by similarity (distance → smaller is better)
+    ranked_chunks = sorted(
+        zip(chunks, distances),
+        key=lambda x: x[1]
+    )
+
+    top_chunks = [c for c, _ in ranked_chunks[:3]]
+    top_distances = [d for _, d in ranked_chunks[:3]]
+
+    context = "\n\n".join(top_chunks)
+
+    # ==============================
     # Step 5 — Prompt
+    # ==============================
+
     prompt = f"""
 You are a cybersecurity analyst.
 
@@ -165,7 +189,10 @@ Return JSON:
 }}
 """
 
+    # ==============================
     # Step 6 — Call Ollama
+    # ==============================
+
     try:
         llm_response = chat(
             model="llama3.2:3b",
@@ -181,12 +208,18 @@ Return JSON:
             detail=f"Ollama generation failed: {str(e)}"
         )
 
+    # ==============================
     # Step 7 — Extract JSON safely
+    # ==============================
+
     try:
         json_start = content.find("{")
         json_end = content.rfind("}") + 1
-        json_text = content[json_start:json_end]
 
+        if json_start == -1 or json_end == -1:
+            raise ValueError("JSON not found")
+
+        json_text = content[json_start:json_end]
         raw_output = json.loads(json_text)
 
     except Exception:
@@ -198,7 +231,10 @@ Return JSON:
             }
         )
 
-    # Step 8 — Validate structure
+    # ==============================
+    # Step 8 — Validate schema
+    # ==============================
+
     try:
         validated_output = LLMResponseModel(**raw_output)
 
@@ -211,10 +247,16 @@ Return JSON:
             }
         )
 
+    # ==============================
     # Step 9 — Compute confidence
-    confidence = compute_confidence(distances)
+    # ==============================
 
+    confidence = compute_confidence(top_distances)
+
+    # ==============================
     # Step 10 — Final response
+    # ==============================
+
     return build_response(
         attack=attack,
         llm_output=validated_output.dict(),
