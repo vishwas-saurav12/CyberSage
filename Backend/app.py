@@ -127,7 +127,7 @@ def chat_endpoint(payload: QueryRequest):
     query_embedding = model.encode([query]).tolist()
 
     # Step 3: Retrieve relevant chunks
-    chunks = retrieve_chunks(
+    chunks, distances = retrieve_chunks(
         collection=collection,
         query_embedding=query_embedding,
         attack_id=attack["attack_id"]
@@ -189,7 +189,7 @@ prevention (array of strings)
         )
 
     # Step 8: Compute confidence
-    confidence = compute_confidence(len(chunks))
+    confidence = compute_confidence(distances)
 
     # Step 9: Return final structured response
     return build_response(

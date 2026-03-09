@@ -1,8 +1,11 @@
-def compute_confidence(num_chunks: int) -> float:
-    """
-    Simple, honest confidence calculation.
-    Never returns 1.0
-    """
-    base = 0.6
-    increment = num_chunks * 0.05
-    return round(min(0.85, base + increment), 2)
+def compute_confidence(distances):
+
+    if not distances:
+        return 0.0
+
+    # Convert distance to similarity
+    similarities = [1 - d for d in distances]
+
+    avg_similarity = sum(similarities) / len(similarities)
+
+    return round(avg_similarity, 2)
