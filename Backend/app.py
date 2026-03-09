@@ -1,13 +1,14 @@
 from fastapi import FastAPI, HTTPException # type: ignore
-from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware # type: ignore
+from pydantic import BaseModel, ValidationError
+from typing import List
+from fastapi.middleware.cors import CORSMiddleware   # type: ignore
 
 import json
 import os
 
-import chromadb # type: ignore
-from sentence_transformers import SentenceTransformer # type: ignore
-from ollama import chat # type: ignore
+import chromadb  # type: ignore
+from sentence_transformers import SentenceTransformer  # type: ignore
+from ollama import chat   # type: ignore
 
 from src.core.attack_classifier import classify_attack
 from src.rag.retriever import retrieve_chunks
@@ -24,7 +25,7 @@ app = FastAPI()
 # CORS Middleware (Required for Web + Phone)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Use specific origin in production
+    allow_origins=["*"],  # Restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -41,17 +42,53 @@ CHROMA_DB_PATH = os.path.join(BASE_DIR, "chroma_db")
 # Load embedding model once
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Persistent Chroma Client (must match embedding pipeline)
+# Persistent Chroma Client
 client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
 collection = client.get_collection(name="cyber_attacks")
 
 
 # ==============================
-# REQUEST SCHEMA
+# REQUEST / RESPONSE SCHEMAS
 # ==============================
 
 class QueryRequest(BaseModel):
     query: str
+
+
+class LLMResponseModel(BaseModel):
+    summary: str
+    attack_vector: str
+    impact: str
+    prevention: List[str]
+
+
+# ==============================
+# SECURITY HELPERS
+# ==============================
+
+def is_malicious_query(query: str) -> bool:
+    blocked_keywords = [
+        "ignore previous instructions",
+        "system prompt",
+        "developer message",
+        "reveal hidden",
+        "print full context",
+        "bypass rules",
+        "show raw prompt",
+    ]
+
+    query_lower = query.lower()
+    return any(keyword in query_lower for keyword in blocked_keywords)
+
+
+def error_response(code: str, message: str):
+    raise HTTPException(
+        status_code=400,
+        detail={
+            "error_code": code,
+            "message": message
+        }
+    )
 
 
 # ==============================
@@ -60,20 +97,30 @@ class QueryRequest(BaseModel):
 
 @app.post("/chat")
 def chat_endpoint(payload: QueryRequest):
+
     query = payload.query.strip()
 
+    # Validate query
     if not query:
-        raise HTTPException(
-            status_code=400,
-            detail="Query cannot be empty."
+        error_response(
+            "EMPTY_QUERY",
+            "Query cannot be empty."
+        )
+
+    # Prompt injection protection
+    if is_malicious_query(query):
+        error_response(
+            "MALICIOUS_QUERY",
+            "Query contains unsafe instructions."
         )
 
     # Step 1: Classify attack
     attack = classify_attack(query)
+
     if not attack:
-        raise HTTPException(
-            status_code=400,
-            detail="Unable to classify attack. Please be more specific."
+        error_response(
+            "CLASSIFICATION_FAILED",
+            "Unable to classify attack. Please be more specific."
         )
 
     # Step 2: Generate embedding
@@ -87,9 +134,9 @@ def chat_endpoint(payload: QueryRequest):
     )
 
     if not chunks:
-        raise HTTPException(
-            status_code=404,
-            detail="No relevant knowledge found."
+        error_response(
+            "NO_RELEVANT_CHUNKS",
+            "No relevant knowledge found for this attack."
         )
 
     # Step 4: Build context
@@ -118,20 +165,35 @@ prevention (array of strings)
         options={"temperature": 0}
     )
 
+    # Step 7: Validate LLM JSON Output
     try:
-        llm_output = json.loads(llm_response["message"]["content"])
-    except Exception:
+        raw_output = json.loads(llm_response["message"]["content"])
+        validated_output = LLMResponseModel(**raw_output)
+
+    except json.JSONDecodeError:
         raise HTTPException(
             status_code=500,
-            detail="LLM returned invalid JSON."
+            detail={
+                "error_code": "LLM_JSON_ERROR",
+                "message": "LLM returned malformed JSON."
+            }
         )
 
-    # Step 7: Compute confidence
+    except ValidationError:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error_code": "LLM_SCHEMA_ERROR",
+                "message": "LLM response structure invalid."
+            }
+        )
+
+    # Step 8: Compute confidence
     confidence = compute_confidence(len(chunks))
 
-    # Step 8: Build final structured response
+    # Step 9: Return final structured response
     return build_response(
         attack=attack,
-        llm_output=llm_output,
+        llm_output=validated_output.dict(),
         confidence=confidence
     )

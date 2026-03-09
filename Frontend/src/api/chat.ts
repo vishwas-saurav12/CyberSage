@@ -10,9 +10,17 @@ export async function sendChatQuery(query: string): Promise<ChatResponse> {
     body: JSON.stringify({ query }),
   });
 
+  const data = await response.json();
+
   if (!response.ok) {
-    throw new Error("Failed to fetch response");
+    // Backend structured error
+    if (data?.detail?.message) {
+      throw new Error(data.detail.message);
+    }
+
+    // Fallback
+    throw new Error("Server error occurred");
   }
 
-  return response.json();
+  return data;
 }
