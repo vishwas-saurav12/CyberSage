@@ -1,14 +1,14 @@
-from fastapi import FastAPI, HTTPException # type: ignore
+from fastapi import FastAPI, HTTPException  # type: ignore
 from pydantic import BaseModel, ValidationError
 from typing import List
-from fastapi.middleware.cors import CORSMiddleware   # type: ignore
+from fastapi.middleware.cors import CORSMiddleware  # type: ignore
 
 import json
 import os
 
 import chromadb  # type: ignore
 from sentence_transformers import SentenceTransformer  # type: ignore
-from ollama import chat   # type: ignore
+from ollama import chat  # type: ignore
 
 from src.core.attack_classifier import classify_attack
 from src.rag.retriever import retrieve_chunks
@@ -22,10 +22,9 @@ from src.rag.response_builder import build_response
 
 app = FastAPI()
 
-# CORS Middleware (Required for Web + Phone)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Restrict in production
+    allow_origins=["*"],  # restrict later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,22 +32,20 @@ app.add_middleware(
 
 
 # ==============================
-# PATH & DATABASE SETUP
+# PATH & DATABASE
 # ==============================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CHROMA_DB_PATH = os.path.join(BASE_DIR, "chroma_db")
 
-# Load embedding model once
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Persistent Chroma Client
 client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
 collection = client.get_collection(name="cyber_attacks")
 
 
 # ==============================
-# REQUEST / RESPONSE SCHEMAS
+# SCHEMAS
 # ==============================
 
 class QueryRequest(BaseModel):
@@ -100,21 +97,13 @@ def chat_endpoint(payload: QueryRequest):
 
     query = payload.query.strip()
 
-    # Validate query
     if not query:
-        error_response(
-            "EMPTY_QUERY",
-            "Query cannot be empty."
-        )
+        error_response("EMPTY_QUERY", "Query cannot be empty.")
 
-    # Prompt injection protection
     if is_malicious_query(query):
-        error_response(
-            "MALICIOUS_QUERY",
-            "Query contains unsafe instructions."
-        )
+        error_response("MALICIOUS_QUERY", "Query contains unsafe instructions.")
 
-    # Step 1: Classify attack
+    # Step 1 — Attack classification
     attack = classify_attack(query)
 
     if not attack:
@@ -123,75 +112,109 @@ def chat_endpoint(payload: QueryRequest):
             "Unable to classify attack. Please be more specific."
         )
 
-    # Step 2: Generate embedding
+    # Step 2 — Query embedding
     query_embedding = model.encode([query]).tolist()
 
-    # Step 3: Retrieve relevant chunks
-    chunks, distances = retrieve_chunks(
-        collection=collection,
-        query_embedding=query_embedding,
-        attack_id=attack["attack_id"]
-    )
+    # Step 3 — Retrieve chunks
+    try:
+        chunks, distances = retrieve_chunks(
+            collection=collection,
+            query_embedding=query_embedding,
+            attack_id=attack["attack_id"]
+        )
+    except Exception:
+        # fallback in case retriever returns only chunks
+        chunks = retrieve_chunks(
+            collection=collection,
+            query_embedding=query_embedding,
+            attack_id=attack["attack_id"]
+        )
+        distances = [0.5] * len(chunks)
 
     if not chunks:
         error_response(
             "NO_RELEVANT_CHUNKS",
-            "No relevant knowledge found for this attack."
+            "No relevant knowledge found."
         )
 
-    # Step 4: Build context
-    context = "\n\n".join(chunks)
+    # Step 4 — Context creation
+    context = "\n\n".join(chunks[:3])
 
-    # Step 5: LLM Prompt
+    # Step 5 — Prompt
     prompt = f"""
 You are a cybersecurity analyst.
-Answer STRICTLY in valid JSON.
-Do NOT include markdown or explanations.
+
+Use the provided context to answer the question.
+
+Rules:
+- Only use the context
+- Do not invent information
+- Return STRICT JSON
+- No explanations outside JSON
 
 Context:
 {context}
 
-Return JSON with:
-summary (string)
-attack_vector (string)
-impact (string)
-prevention (array of strings)
+Return JSON:
+
+{{
+"summary": "short explanation of the attack",
+"attack_vector": "how the attack spreads",
+"impact": "what damage the attack causes",
+"prevention": ["step1","step2","step3"]
+}}
 """
 
-    # Step 6: Call Local LLM (Ollama)
-    llm_response = chat(
-        model="mistral",
-        messages=[{"role": "user", "content": prompt}],
-        options={"temperature": 0}
-    )
-
-    # Step 7: Validate LLM JSON Output
+    # Step 6 — Call Ollama
     try:
-        raw_output = json.loads(llm_response["message"]["content"])
-        validated_output = LLMResponseModel(**raw_output)
+        llm_response = chat(
+            model="llama3.2:3b",
+            messages=[{"role": "user", "content": prompt}],
+            options={"temperature": 0}
+        )
 
-    except json.JSONDecodeError:
+        content = llm_response["message"]["content"].strip()
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Ollama generation failed: {str(e)}"
+        )
+
+    # Step 7 — Extract JSON safely
+    try:
+        json_start = content.find("{")
+        json_end = content.rfind("}") + 1
+        json_text = content[json_start:json_end]
+
+        raw_output = json.loads(json_text)
+
+    except Exception:
         raise HTTPException(
             status_code=500,
             detail={
                 "error_code": "LLM_JSON_ERROR",
-                "message": "LLM returned malformed JSON."
+                "message": "Model returned invalid JSON."
             }
         )
+
+    # Step 8 — Validate structure
+    try:
+        validated_output = LLMResponseModel(**raw_output)
 
     except ValidationError:
         raise HTTPException(
             status_code=500,
             detail={
                 "error_code": "LLM_SCHEMA_ERROR",
-                "message": "LLM response structure invalid."
+                "message": "LLM response schema invalid."
             }
         )
 
-    # Step 8: Compute confidence
+    # Step 9 — Compute confidence
     confidence = compute_confidence(distances)
 
-    # Step 9: Return final structured response
+    # Step 10 — Final response
     return build_response(
         attack=attack,
         llm_output=validated_output.dict(),

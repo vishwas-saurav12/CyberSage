@@ -3,54 +3,78 @@ import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { sendChatQuery } from "../../src/api/chat";
 import { ChatResponse } from "../../src/types/Chat";
 
+/* Severity color mapping */
+const severityColor: Record<string, string> = {
+  Critical: "#ef4444",
+  High: "#f97316",
+  Medium: "#eab308",
+  Low: "#22c55e",
+};
+
+/* Severity Badge Component */
+const SeverityBadge = ({ severity }: { severity: string }) => {
+  return (
+    <View
+      style={{
+        backgroundColor: severityColor[severity] || "#6b7280",
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 6,
+        alignSelf: "flex-start",
+        marginTop: 6,
+      }}
+    >
+      <Text style={{ color: "white", fontWeight: "600", fontSize: 12 }}>
+        {severity.toUpperCase()}
+      </Text>
+    </View>
+  );
+};
+
 export default function HomeScreen() {
   const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<ChatResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const onAnalyze = async () => {
-    if (!query.trim()) return;
-
-    setLoading(true);
-    setError(null);
-    setResponse(null);
-
+  const handleAnalyze = async () => {
     try {
-      const data = await sendChatQuery(query);
-      setResponse(data);
-    } catch (err) {
-      setError("Failed to analyze query");
+      setLoading(true);
+      setError("");
+
+      const result = await sendChatQuery(query);
+      setResponse(result);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ScrollView style={{ padding: 16 }}>
-      <Text style={{ fontSize: 22, fontWeight: "600", marginBottom: 12 }}>
-        CyberSage
-      </Text>
+    <ScrollView style={{ padding: 20 }}>
 
+      {/* Query Input */}
       <TextInput
-        placeholder="Explain WannaCry attack"
+        placeholder="Ask about a cyber attack..."
         value={query}
         onChangeText={setQuery}
         style={{
           borderWidth: 1,
           borderRadius: 8,
           padding: 12,
-          marginBottom: 12,
+          marginBottom: 12
         }}
       />
 
+      {/* Analyze Button */}
       <Pressable
-        onPress={onAnalyze}
+        onPress={handleAnalyze}
         style={{
           backgroundColor: "#2563eb",
           padding: 12,
           borderRadius: 8,
-          alignItems: "center",
+          alignItems: "center"
         }}
       >
         <Text style={{ color: "white", fontWeight: "600" }}>
@@ -58,39 +82,58 @@ export default function HomeScreen() {
         </Text>
       </Pressable>
 
-      {error && (
-        <Text style={{ color: "red", marginTop: 12 }}>{error}</Text>
-      )}
+      {/* Error Message */}
+      {error ? (
+        <Text style={{ color: "red", marginTop: 10 }}>{error}</Text>
+      ) : null}
 
+      {/* Result Display */}
       {response && (
-        <View style={{ marginTop: 20 }}>
-          <Text style={{ fontSize: 18, fontWeight: "700" }}>
+        <View style={{ marginTop: 25 }}>
+
+          {/* Attack Title */}
+          <Text style={{ fontSize: 22, fontWeight: "bold" }}>
             {response.attack_name}
           </Text>
 
-          <Text style={{ marginTop: 8 }}>{response.summary}</Text>
+          {/* Severity Badge */}
+          <SeverityBadge severity={response.severity} />
 
-          <Text style={{ marginTop: 12, fontWeight: "600" }}>
+          {/* Summary */}
+          <Text style={{ marginTop: 14, fontWeight: "600", fontSize: 16 }}>
+            Summary
+          </Text>
+          <Text>{response.summary}</Text>
+
+          {/* Attack Vector */}
+          <Text style={{ marginTop: 14, fontWeight: "600", fontSize: 16 }}>
             Attack Vector
           </Text>
           <Text>{response.attack_vector}</Text>
 
-          <Text style={{ marginTop: 12, fontWeight: "600" }}>Impact</Text>
+          {/* Impact */}
+          <Text style={{ marginTop: 14, fontWeight: "600", fontSize: 16 }}>
+            Impact
+          </Text>
           <Text>{response.impact}</Text>
 
-          <Text style={{ marginTop: 12, fontWeight: "600" }}>
+          {/* Prevention */}
+          <Text style={{ marginTop: 14, fontWeight: "600", fontSize: 16 }}>
             Prevention
           </Text>
-          {response.prevention.map((item, idx) => (
-            <Text key={idx}>• {item}</Text>
+
+          {response.prevention.map((step, index) => (
+            <Text key={index}>• {step}</Text>
           ))}
 
-          <Text style={{ marginTop: 12 }}>
-            Severity: {response.severity}
+          {/* Confidence */}
+          <Text style={{ marginTop: 16, fontWeight: "600" }}>
+            Confidence Score: {response.confidence}
           </Text>
-          <Text>Confidence: {response.confidence}</Text>
+
         </View>
       )}
+
     </ScrollView>
   );
 }
