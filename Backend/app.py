@@ -3,6 +3,8 @@ from pydantic import BaseModel, ValidationError
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware  # type: ignore
 
+from collections import deque
+
 import json
 import os
 
@@ -24,7 +26,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # restrict later for production
+    allow_origins=["*"],  # restrict later in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,10 +40,19 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CHROMA_DB_PATH = os.path.join(BASE_DIR, "chroma_db")
 
+# Load embedding model once
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
+# Persistent Chroma client
 client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
 collection = client.get_collection(name="cyber_attacks")
+
+
+# ==============================
+# CONVERSATION MEMORY
+# ==============================
+
+conversation_memory = deque(maxlen=6)
 
 
 # ==============================
@@ -88,6 +99,18 @@ def error_response(code: str, message: str):
     )
 
 
+def build_memory_context():
+    if not conversation_memory:
+        return ""
+
+    history = "\n".join(conversation_memory)
+
+    return f"""
+Conversation History:
+{history}
+"""
+
+
 # ==============================
 # CHAT ENDPOINT
 # ==============================
@@ -97,11 +120,18 @@ def chat_endpoint(payload: QueryRequest):
 
     query = payload.query.strip()
 
+    # ==============================
+    # Validation
+    # ==============================
+
     if not query:
         error_response("EMPTY_QUERY", "Query cannot be empty.")
 
     if is_malicious_query(query):
         error_response("MALICIOUS_QUERY", "Query contains unsafe instructions.")
+
+    # Save user query to memory
+    conversation_memory.append(f"User: {query}")
 
     # ==============================
     # Step 1 — Attack classification
@@ -116,7 +146,7 @@ def chat_endpoint(payload: QueryRequest):
         )
 
     # ==============================
-    # Step 2 — Generate embedding
+    # Step 2 — Query embedding
     # ==============================
 
     query_embedding = model.encode([query]).tolist()
@@ -150,7 +180,6 @@ def chat_endpoint(payload: QueryRequest):
     # Step 4 — Smart chunk ranking
     # ==============================
 
-    # Sort by similarity (distance → smaller is better)
     ranked_chunks = sorted(
         zip(chunks, distances),
         key=lambda x: x[1]
@@ -165,8 +194,12 @@ def chat_endpoint(payload: QueryRequest):
     # Step 5 — Prompt
     # ==============================
 
+    memory_context = build_memory_context()
+
     prompt = f"""
 You are a cybersecurity analyst.
+
+{memory_context}
 
 Use the provided context to answer the question.
 
@@ -252,6 +285,14 @@ Return JSON:
     # ==============================
 
     confidence = compute_confidence(top_distances)
+
+    # ==============================
+    # Save assistant response
+    # ==============================
+
+    conversation_memory.append(
+        f"Assistant: {validated_output.summary}"
+    )
 
     # ==============================
     # Step 10 — Final response
